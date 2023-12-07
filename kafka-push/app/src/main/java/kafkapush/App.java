@@ -3,14 +3,40 @@
  */
 package kafkapush;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class App {
 
-    public static void main(String[] args) {
-        // read the args:
-        CliOpts cli = new CliOpts(args);
-        System.out.println(cli.getBootstrap());
-        System.out.println(cli.getTopic());
-        System.out.println(cli.getHostName());
-        System.out.println(cli.getPort());
+  private static final Logger LOG = LoggerFactory.getLogger(App.class);
+
+  public static void main(String[] args) {
+    // read the args:
+    CliOpts cli = new CliOpts(args);
+    LOG.info("bootstrap: {}, topic: {}", cli.getBootstrap(), cli.getTopic());
+
+    // set up the input from stdin:
+    try (
+      BufferedReader reader = new BufferedReader(
+        new InputStreamReader(System.in)
+      );
+      Publisher kafka = new Publisher()
+    ) {
+      // configure the pubber:
+      kafka.configure(cli.getBootstrap());
+
+      // for each line read, send to publisher
+      String nextLine = null;
+      while ((nextLine = reader.readLine()) != null) {
+        LOG.info("next => {}", nextLine);
+        kafka.push(cli.getTopic(), nextLine);
+      }
+    } catch (Exception ex) {
+      ex.printStackTrace();
+      System.exit(1);
     }
+    System.exit(0);
+  }
 }

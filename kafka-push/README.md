@@ -13,3 +13,7 @@ flag | description | example
 ||| -b :9092 
 -h | hostname | -h localhost
 -p | port | -p 1234
+
+## Observations
+1. Ran this many times with ZERO output to kafka.  wtf?  discovered that if you are running from gradle using `./gradle run`, you must tell gradle that you want stdin connected to the run input.  If you look at the build.gradle file, you can see where I enabled this.
+1. The current kafka docker setup is listening on 9092 on the data network, but 19092 on the localhost network.  I'll see if I can finesse this.
